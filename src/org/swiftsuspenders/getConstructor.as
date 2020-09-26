@@ -7,11 +7,13 @@
 
 package org.swiftsuspenders
 {
+COMPILE::SWF{
 	import flash.utils.Proxy;
-	import flash.utils.getDefinitionByName;
-	import flash.utils.getQualifiedClassName;
+}
+	import org.apache.royale.reflection.getDefinitionByName;
+	import org.apache.royale.reflection.getQualifiedClassName;
 	
-	internal function getConstructor(value : Object) : Class
+	public function getConstructor(value : Object) : Class
 	{
 		/*
 		   There are several types for which the 'constructor' property doesn't work:

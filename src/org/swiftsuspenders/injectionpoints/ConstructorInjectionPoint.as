@@ -7,7 +7,7 @@
 
 package org.swiftsuspenders.injectionpoints
 {
-	import flash.utils.describeType;
+	import org.apache.royale.reflection.describeType;
 
 	import org.swiftsuspenders.Injector;
 

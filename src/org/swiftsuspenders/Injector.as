@@ -7,12 +7,15 @@
 
 package org.swiftsuspenders
 {
-	import flash.system.ApplicationDomain;
+COMPILE::SWF {
 	import flash.utils.Dictionary;
 	import flash.utils.Proxy;
-	import flash.utils.describeType;
-	import flash.utils.getDefinitionByName;
-	import flash.utils.getQualifiedClassName;
+}
+	import org.apache.royale.reflection.describeType;
+	import flash.system.ApplicationDomain;
+
+	import org.apache.royale.reflection.getDefinitionByName;
+	import org.apache.royale.reflection.getQualifiedClassName;
 	
 	import org.swiftsuspenders.injectionpoints.ConstructorInjectionPoint;
 	import org.swiftsuspenders.injectionpoints.InjectionPoint;
@@ -30,12 +33,17 @@ package org.swiftsuspenders
 		/*******************************************************************************************
 		*								private properties										   *
 		*******************************************************************************************/
+		COMPILE::SWF
 		private static var INJECTION_POINTS_CACHE : Dictionary = new Dictionary(true);
+		COMPILE::JS
+		private static var INJECTION_POINTS_CACHE : WeakMap = new WeakMap();
+
+
 		private var m_parentInjector : Injector;
         private var m_applicationDomain:ApplicationDomain;
-		private var m_mappings : Dictionary;
-		private var m_injecteeDescriptions : Dictionary;
-		private var m_attendedToInjectees : Dictionary;
+		private var m_mappings : Object /*Dictionary*/;
+		private var m_injecteeDescriptions : Object /*Dictionary*/;
+		private var m_attendedToInjectees : Object /*Dictionary*/;
 		private var m_xmlMetadata : XML;
 		
 		
@@ -44,16 +52,16 @@ package org.swiftsuspenders
 		*******************************************************************************************/
 		public function Injector(xmlConfig : XML = null)
 		{
-			m_mappings = new Dictionary();
+			m_mappings = {}; //new Dictionary();
 			if (xmlConfig != null)
 			{
-				m_injecteeDescriptions = new Dictionary(true);
+				m_injecteeDescriptions = {}; //new Dictionary(true);
 			}
 			else
 			{
 				m_injecteeDescriptions = INJECTION_POINTS_CACHE;
 			}
-			m_attendedToInjectees = new Dictionary(true);
+			m_attendedToInjectees = {}; // new Dictionary(true);
 			m_xmlMetadata = xmlConfig;
 		}
 		
@@ -197,7 +205,7 @@ package org.swiftsuspenders
 			//restore own map of worked injectees if parent injector is removed
 			if (m_parentInjector && !parentInjector)
 			{
-				m_attendedToInjectees = new Dictionary(true);
+				m_attendedToInjectees = {}; //new Dictionary(true);
 			}
 			m_parentInjector = parentInjector;
 			//use parent's map of worked injectees
@@ -214,7 +222,13 @@ package org.swiftsuspenders
 
 		public static function purgeInjectionPointsCache() : void
 		{
-			INJECTION_POINTS_CACHE = new Dictionary(true);
+			COMPILE::SWF {
+				INJECTION_POINTS_CACHE = new Dictionary(true);
+			}
+
+			COMPILE::JS {
+				INJECTION_POINTS_CACHE = new WeakMap();
+			}
 		}
 		
 		
@@ -238,7 +252,7 @@ package org.swiftsuspenders
 			return null;
 		}
 
-		internal function get attendedToInjectees() : Dictionary
+		internal function get attendedToInjectees() : Object
 		{
 			return m_attendedToInjectees;
 		}

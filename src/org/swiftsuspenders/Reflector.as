@@ -8,9 +8,10 @@
 package org.swiftsuspenders
 {
 	import flash.system.ApplicationDomain;
-	import flash.utils.describeType;
-	import flash.utils.getDefinitionByName;
-	import flash.utils.getQualifiedClassName;
+	import org.apache.royale.reflection.describeType;
+
+	import org.apache.royale.reflection.getDefinitionByName;
+	import org.apache.royale.reflection.getQualifiedClassName;
 
 	/**
 	 * @author tschneidereit

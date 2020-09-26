@@ -7,7 +7,7 @@
 
 package org.swiftsuspenders.injectionpoints
 {
-	import flash.utils.getQualifiedClassName;
+	import org.apache.royale.reflection.getQualifiedClassName;
 
 	import org.swiftsuspenders.InjectionConfig;
 	import org.swiftsuspenders.Injector;
