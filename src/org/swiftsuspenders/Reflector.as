@@ -13,6 +13,10 @@ package org.swiftsuspenders
 	import org.apache.royale.reflection.getDefinitionByName;
 	import org.apache.royale.reflection.getQualifiedClassName;
 
+	import org.apache.royale.reflection.describeType;
+	import org.apache.royale.reflection.TypeDefinition;
+	import org.apache.royale.reflection.utils.isDerivedType;
+
 	/**
 	 * @author tschneidereit
 	 */
@@ -56,11 +60,15 @@ package org.swiftsuspenders
             if (actualClass == superclass)
                 return true;
 
-            var factoryDescription : XML = describeType(actualClass).factory[0];
+			var type1:TypeDefinition = describeType(actualClass);
+			var type2:TypeDefinition = describeType(superclass);
 
-			return (factoryDescription.children().(
+           // var factoryDescription : XML = describeType(actualClass).factory[0];
+
+			/*return (factoryDescription.children().(
             	name() == "implementsInterface" || name() == "extendsClass").(
-            	attribute("type") == getQualifiedClassName(superclass)).length() > 0);
+            	attribute("type") == getQualifiedClassName(superclass)).length() > 0);*/
+			return isDerivedType(type1, type2);
 		}
 
 		public function getClass(value : *, applicationDomain : ApplicationDomain = null) : Class
