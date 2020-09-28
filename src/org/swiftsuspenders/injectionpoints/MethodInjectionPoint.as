@@ -7,7 +7,15 @@
 
 package org.swiftsuspenders.injectionpoints
 {
-	import org.apache.royale.reflection.getQualifiedClassName;
+import org.apache.royale.debugging.throwError;
+import org.apache.royale.reflection.DefinitionWithMetaData;
+import org.apache.royale.reflection.MetaDataArgDefinition;
+import org.apache.royale.reflection.MetaDataDefinition;
+import org.apache.royale.reflection.MethodDefinition;
+import org.apache.royale.reflection.ParameterDefinition;
+import org.apache.royale.reflection.getQualifiedClassName;
+	import org.apache.royale.reflection.getDefinitionByName;
+
 
 	import org.swiftsuspenders.InjectionConfig;
 	import org.swiftsuspenders.Injector;
@@ -21,21 +29,26 @@ package org.swiftsuspenders.injectionpoints
 		protected var methodName : String;
 		protected var _parameterInjectionConfigs : Array;
 		protected var requiredParameters : int = 0;
+
+		protected var _methodDef:MethodDefinition;
 		
 		
 		/*******************************************************************************************
 		*								public methods											   *
 		*******************************************************************************************/
-		public function MethodInjectionPoint(node : XML, injector : Injector = null)
+		public function MethodInjectionPoint(def : DefinitionWithMetaData, injector : Injector = null)
 		{
-			super(node, injector);
+			super(def, injector);
 		}
 		
 		override public function applyInjection(target : Object, injector : Injector) : Object
 		{
 			var parameters : Array = gatherParameterValues(target, injector);
-			var method : Function = target[methodName];
-			method.apply(target, parameters);
+		/*	var method : Function = target[methodName];
+			method.apply(target, parameters);*/
+
+			_methodDef.getMethod(target).apply(target, parameters);
+
 			return target;
 		}
 
@@ -43,16 +56,57 @@ package org.swiftsuspenders.injectionpoints
 		/*******************************************************************************************
 		*								protected methods										   *
 		*******************************************************************************************/
-		override protected function initializeInjection(node : XML) : void
+		override protected function initializeInjection(def : DefinitionWithMetaData) : void
 		{
-			var nameArgs : XMLList = node.arg.(@key == 'name');
-			var methodNode : XML = node.parent();
-			methodName = methodNode.@name.toString();
+			var methodDef:MethodDefinition = def as MethodDefinition;
+			_methodDef = methodDef;
+			//@todo remove this, debugging of ported code:
+			if (!methodDef) throwError('initializeInjection is not processing an actual MethodDefinition');
+
+			var injects:Array = def.retrieveMetaDataByName('Inject');
+			var injectData:MetaDataDefinition = injects[0] as MetaDataDefinition;
+
+			var nameArgs:Array = injectData.getArgsByKey('name');
+
+
+		//	var nameArgs : XMLList = node.arg.(@key == 'name');
+		//	var methodNode : XML = node.parent();
+			methodName = methodDef.name;
 			
-			gatherParameters(methodNode, nameArgs);
+			gatherParameters(methodDef, nameArgs);
+		}
+
+		protected function gatherParameters(methodDef : MethodDefinition, nameArgs : Array) : void
+		{
+			_parameterInjectionConfigs = [];
+			var i : int = 0;
+
+			for each (var parameter : ParameterDefinition in methodDef.parameters)
+			{
+				var injectionName : String = '';
+				if (nameArgs[i])
+				{
+					injectionName = (nameArgs[i] as MetaDataArgDefinition).value;
+				}
+				var parameterTypeName : String = parameter.type.qualifiedName;
+				if (parameterTypeName == '*')
+				{
+					if (parameter.optional) {
+						throw new InjectorError('Error in method definition of injectee. ' +methodDef.owner.qualifiedName +
+								' Required parameters can\'t have type "*".');
+					} else {
+						parameterTypeName = null;
+					}
+				}
+				_parameterInjectionConfigs.push(
+						new ParameterInjectionConfig(parameterTypeName, injectionName));
+
+				if (!parameter.optional) requiredParameters++;
+				i++;
+			}
 		}
 		
-		protected function gatherParameters(methodNode : XML, nameArgs : XMLList) : void
+		/*protected function gatherParameters(methodNode : XML, nameArgs : XMLList) : void
 		{
 			_parameterInjectionConfigs = [];
 			var i : int = 0;
@@ -85,7 +139,7 @@ package org.swiftsuspenders.injectionpoints
 				}
 				i++;
 			}
-		}
+		}*/
 		
 		protected function gatherParameterValues(target : Object, injector : Injector) : Array
 		{
@@ -95,7 +149,8 @@ package org.swiftsuspenders.injectionpoints
 			{
 				var parameterConfig : ParameterInjectionConfig = _parameterInjectionConfigs[i];
 				var config : InjectionConfig = injector.getMapping(Class(
-						injector.getApplicationDomain().getDefinition(parameterConfig.typeName)),
+						getDefinitionByName(parameterConfig.typeName)
+						/*injector.getApplicationDomain().getDefinition(parameterConfig.typeName)*/),
 						parameterConfig.injectionName);
 				var injection : Object = config.getResponse(injector);
 				if (injection == null)

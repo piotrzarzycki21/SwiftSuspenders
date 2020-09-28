@@ -232,6 +232,13 @@
 					</dependency>
 				</dependencies>
 			</plugin>-->
+
+		<plugin>
+			<!-- including this is only to get Intellij intellisense to work -->
+			<groupId>net.flexmojos.oss</groupId>
+			<artifactId>flexmojos-maven-plugin</artifactId>
+			<version>7.1.1</version>
+		</plugin>
 	</plugins>
 	</build>
 
@@ -314,7 +321,11 @@
 			<scope>compile</scope>
 		</dependency>
 
-
+		<dependency>
+			<groupId>net.flexmojos.oss</groupId>
+			<artifactId>flexmojos-maven-plugin</artifactId>
+			<version>7.1.1</version>
+		</dependency>
 
 		<!--<dependency>
 			<groupId>org.apache.royale.framework</groupId>

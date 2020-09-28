@@ -7,6 +7,12 @@
 
 package org.swiftsuspenders.injectionpoints
 {
+import org.apache.royale.reflection.DefinitionWithMetaData;
+import org.apache.royale.reflection.MetaDataArgDefinition;
+import org.apache.royale.reflection.MetaDataDefinition;
+import org.apache.royale.reflection.VariableDefinition;
+import org.apache.royale.reflection.getDefinitionByName;
+
 	import org.swiftsuspenders.InjectionConfig;
 	import org.swiftsuspenders.Injector;
 	import org.swiftsuspenders.InjectorError;
@@ -20,19 +26,22 @@ package org.swiftsuspenders.injectionpoints
 		private var _propertyType : String;
 		private var _injectionName : String;
 
+		private var _varDef:VariableDefinition;
+
 		
 		/*******************************************************************************************
 		*								public methods											   *
 		*******************************************************************************************/
-		public function PropertyInjectionPoint(node : XML, injector : Injector = null)
+		public function PropertyInjectionPoint(def : DefinitionWithMetaData, injector : Injector = null)
 		{
-			super(node, null);
+			super(def, null);
 		}
 		
 		override public function applyInjection(target : Object, injector : Injector) : Object
 		{
 			var injectionConfig : InjectionConfig = injector.getMapping(Class(
-					injector.getApplicationDomain().getDefinition(_propertyType)), _injectionName);
+					getDefinitionByName(_propertyType)
+					/*injector.getApplicationDomain().getDefinition(_propertyType)*/), _injectionName);
 			var injection : Object = injectionConfig.getResponse(injector);
 			if (injection == null)
 			{
@@ -50,11 +59,21 @@ package org.swiftsuspenders.injectionpoints
 		/*******************************************************************************************
 		*								protected methods										   *
 		*******************************************************************************************/
-		override protected function initializeInjection(node : XML) : void
+		override protected function initializeInjection(def : DefinitionWithMetaData) : void
 		{
-			_propertyType = node.parent().@type.toString();
+			_varDef = def as VariableDefinition;
+			_propertyName = def.name;
+			_propertyType = _varDef.type.qualifiedName;
+			var injects:Array = def.retrieveMetaDataByName('Inject');
+			var injectData:MetaDataDefinition = injects[0] as MetaDataDefinition;
+			var args:Array = injectData.getArgsByKey('value');
+			var arg:MetaDataArgDefinition = args[0] as MetaDataArgDefinition;
+
+			_injectionName = arg.value
+
+/*			_propertyType = node.parent().@type.toString();
 			_propertyName = node.parent().@name.toString();
-			_injectionName = node.arg.attribute('value').toString();
+			_injectionName = node.arg.attribute('value').toString();*/
 		}
 	}
 }

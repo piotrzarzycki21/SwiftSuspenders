@@ -7,7 +7,7 @@
 
 package org.swiftsuspenders
 {
-	import flash.system.ApplicationDomain;
+	//import flash.system.ApplicationDomain;
 	import org.apache.royale.reflection.describeType;
 
 	import org.apache.royale.reflection.getDefinitionByName;
@@ -30,7 +30,7 @@ package org.swiftsuspenders
 		}
 
 		public function classExtendsOrImplements(classOrClassName : Object,
-			superclass : Class, application : ApplicationDomain = null) : Boolean
+			superclass : Class/*, application : ApplicationDomain = null*/) : Boolean
 		{
             var actualClass : Class;
 			
@@ -46,8 +46,14 @@ package org.swiftsuspenders
                 }
                 catch (e : Error)
                 {
-                    throw new Error("The class name " + classOrClassName +
-                    	" is not valid because of " + e + "\n" + e.getStackTrace());
+					COMPILE::SWF{
+						throw new Error("The class name " + classOrClassName +
+								" is not valid because of " + e + "\n" + e.getStackTrace());
+					}
+					COMPILE::JS{
+						throw new Error("The class name " + classOrClassName +
+								" is not valid because of " + e + "\n" + e.stack);
+					}
                 }
             }
 
@@ -71,7 +77,7 @@ package org.swiftsuspenders
 			return isDerivedType(type1, type2);
 		}
 
-		public function getClass(value : *, applicationDomain : ApplicationDomain = null) : Class
+		public function getClass(value : */*, applicationDomain : ApplicationDomain = null*/) : Class
 		{
 			if (value is Class)
 			{
@@ -82,9 +88,11 @@ package org.swiftsuspenders
 
 		public function getFQCN(value : *, replaceColons : Boolean = false) : String
 		{
+			//@todo review... replaceColons should not be necessary (redundant) in JS
 			var fqcn:String;
 			if (value is String)
 			{
+
 				fqcn = value;
 				// Add colons if missing and desired.
 				if (!replaceColons && fqcn.indexOf('::') == -1)

@@ -7,12 +7,21 @@
 
 package org.swiftsuspenders
 {
+
+import org.apache.royale.debugging.throwError;
+import org.apache.royale.reflection.MethodDefinition;
+
+import org.apache.royale.reflection.TypeDefinition;
+import org.apache.royale.reflection.VariableDefinition;
+import org.apache.royale.reflection.utils.MemberTypes;
+import org.apache.royale.reflection.utils.getMembersWithMetadata;
+
 COMPILE::SWF {
 	import flash.utils.Dictionary;
 	import flash.utils.Proxy;
 }
 	import org.apache.royale.reflection.describeType;
-	import flash.system.ApplicationDomain;
+	//import flash.system.ApplicationDomain;
 
 	import org.apache.royale.reflection.getDefinitionByName;
 	import org.apache.royale.reflection.getQualifiedClassName;
@@ -40,10 +49,18 @@ COMPILE::SWF {
 
 
 		private var m_parentInjector : Injector;
-        private var m_applicationDomain:ApplicationDomain;
+    //    private var m_applicationDomain:ApplicationDomain;
 		private var m_mappings : Object /*Dictionary*/;
-		private var m_injecteeDescriptions : Object /*Dictionary*/;
-		private var m_attendedToInjectees : Object /*Dictionary*/;
+		COMPILE::SWF
+		private var m_injecteeDescriptions : Dictionary;
+		COMPILE::JS
+		private var m_injecteeDescriptions : WeakMap;
+
+		COMPILE::SWF
+		private var m_attendedToInjectees : Dictionary;
+		COMPILE::JS
+		private var m_attendedToInjectees : WeakMap;
+
 		private var m_xmlMetadata : XML;
 		
 		
@@ -55,13 +72,23 @@ COMPILE::SWF {
 			m_mappings = {}; //new Dictionary();
 			if (xmlConfig != null)
 			{
-				m_injecteeDescriptions = {}; //new Dictionary(true);
+				COMPILE::SWF{
+					m_injecteeDescriptions = new Dictionary(true);
+				}
+				COMPILE::JS{
+					m_injecteeDescriptions = new WeakMap();
+				}
 			}
 			else
 			{
 				m_injecteeDescriptions = INJECTION_POINTS_CACHE;
 			}
-			m_attendedToInjectees = {}; // new Dictionary(true);
+			COMPILE::SWF{
+				m_attendedToInjectees = new Dictionary(true);
+			}
+			COMPILE::JS{
+				m_attendedToInjectees = new WeakMap();
+			}
 			m_xmlMetadata = xmlConfig;
 		}
 		
@@ -114,16 +141,32 @@ COMPILE::SWF {
 		
 		public function injectInto(target : Object) : void
 		{
-			if (m_attendedToInjectees[target])
-			{
-				return;
+
+			COMPILE::SWF{
+				if (m_attendedToInjectees[target])
+				{
+					return;
+				}
+				m_attendedToInjectees[target] = true;
 			}
-			m_attendedToInjectees[target] = true;
+
+			COMPILE::JS{
+				if (m_attendedToInjectees.has(target))
+				{
+					return;
+				}
+				m_attendedToInjectees.set(target, true);
+			}
 
 			//get injection points or cache them if this target's class wasn't encountered before
 			var targetClass : Class = getConstructor(target);
-			var injecteeDescription : InjecteeDescription =
-					m_injecteeDescriptions[targetClass] || getInjectionPoints(targetClass);
+			var injecteeDescription : InjecteeDescription
+
+			COMPILE::SWF
+			injecteeDescription = m_injecteeDescriptions[targetClass] || getInjectionPoints(targetClass);
+
+			COMPILE::JS
+			injecteeDescription = m_injecteeDescriptions.get(targetClass) || getInjectionPoints(targetClass);
 
 			var injectionPoints : Array = injecteeDescription.injectionPoints;
 			var length : int = injectionPoints.length;
@@ -137,7 +180,12 @@ COMPILE::SWF {
 		
 		public function instantiate(clazz:Class):*
 		{
-			var injecteeDescription : InjecteeDescription = m_injecteeDescriptions[clazz];
+			var injecteeDescription : InjecteeDescription;
+			COMPILE::SWF
+			injecteeDescription = m_injecteeDescriptions[clazz];
+			COMPILE::JS
+			injecteeDescription = m_injecteeDescriptions.get(clazz);
+
 			if (!injecteeDescription)
 			{
 				injecteeDescription = getInjectionPoints(clazz);
@@ -182,15 +230,15 @@ COMPILE::SWF {
 			return mapping.getResponse(this);
 		}
 		
-		public function createChildInjector(applicationDomain:ApplicationDomain=null) : Injector
+		public function createChildInjector(/*applicationDomain:ApplicationDomain=null*/) : Injector
 		{
 			var injector : Injector = new Injector();
-            injector.setApplicationDomain(applicationDomain);
+         //   injector.setApplicationDomain(applicationDomain);
 			injector.setParentInjector(this);
 			return injector;
 		}
         
-        public function setApplicationDomain(applicationDomain:ApplicationDomain):void
+       /* public function setApplicationDomain(applicationDomain:ApplicationDomain):void
         {
             m_applicationDomain = applicationDomain;
         }
@@ -198,14 +246,20 @@ COMPILE::SWF {
         public function getApplicationDomain():ApplicationDomain
         {
             return m_applicationDomain ? m_applicationDomain : ApplicationDomain.currentDomain;
-        }
+        }*/
 
 		public function setParentInjector(parentInjector : Injector) : void
 		{
 			//restore own map of worked injectees if parent injector is removed
 			if (m_parentInjector && !parentInjector)
 			{
-				m_attendedToInjectees = {}; //new Dictionary(true);
+				COMPILE::SWF{
+					m_attendedToInjectees = new Dictionary(true);
+				}
+
+				COMPILE::JS{
+					m_attendedToInjectees = new WeakMap();
+				}
 			}
 			m_parentInjector = parentInjector;
 			//use parent's map of worked injectees
@@ -252,24 +306,33 @@ COMPILE::SWF {
 			return null;
 		}
 
-		internal function get attendedToInjectees() : Object
+		COMPILE::SWF
+		internal function get attendedToInjectees() : Dictionary
 		{
 			return m_attendedToInjectees;
 		}
-
+		COMPILE::JS
+		internal function get attendedToInjectees() : WeakMap
+		{
+			return m_attendedToInjectees;
+		}
 		
 		/*******************************************************************************************
 		*								private methods											   *
 		*******************************************************************************************/
 		private function getInjectionPoints(clazz : Class) : InjecteeDescription
 		{
-			var description : XML = describeType(clazz);
-			if (description.@name != 'Object' && description.factory.extendsClass.length() == 0)
-			{
+			var description : TypeDefinition = describeType(clazz);
+
+			if (description.kind == 'interface') {
 				throw new InjectorError('Interfaces can\'t be used as instantiatable classes.');
 			}
+			/*if (description.@name != 'Object' && description.factory.extendsClass.length() == 0)
+			{
+				throw new InjectorError('Interfaces can\'t be used as instantiatable classes.');
+			}*/
 			var injectionPoints : Array = [];
-			var node : XML;
+			//var node : XML;
 			
 			// This is where we have to wire in the XML...
 			if(m_xmlMetadata)
@@ -280,33 +343,64 @@ COMPILE::SWF {
 
 			//get constructor injections
 			var ctorInjectionPoint : InjectionPoint;
-			node = description.factory.constructor[0];
-			if (node)
-			{
-				ctorInjectionPoint = new ConstructorInjectionPoint(node, clazz, this);
-			}
-			else
-			{
+
+			var constructorMethod:MethodDefinition = description.constructorMethod;
+			const paramDefinitions:Array = constructorMethod.parameters;
+		//	node = description.factory.constructor[0];
+			if (paramDefinitions.length == 0) {
 				ctorInjectionPoint = new NoParamsConstructorInjectionPoint();
+			} else {
+				ctorInjectionPoint = new ConstructorInjectionPoint(constructorMethod, clazz, this);
 			}
+
+
 			var injectionPoint : InjectionPoint;
+			var injectableProperties:Array = getMembersWithMetadata(description, 'Inject', false, MemberTypes.ACCESSORS|MemberTypes.VARIABLES);
+
+			for each(var varDef:VariableDefinition in injectableProperties) {
+				injectionPoint = new PropertyInjectionPoint(varDef);
+				injectionPoints.push(injectionPoint);
+			}
+
+			var injectableMethods:Array = getMembersWithMetadata(description, 'Inject', false, MemberTypes.METHODS);
+			for each (var methodDef:MethodDefinition in injectableMethods)
+			{
+				injectionPoint = new MethodInjectionPoint(methodDef, this);
+				injectionPoints.push(injectionPoint);
+			}
+
+			var postConstructMethodPoints : Array = [];
+
+			var postContructMethods:Array = getMembersWithMetadata(description, 'PostConstruct', false, MemberTypes.METHODS);
+			for each (methodDef in postContructMethods)
+			{
+				injectionPoint = new PostConstructInjectionPoint(methodDef, this);
+				postConstructMethodPoints.push(injectionPoint);
+			}
+			if (postConstructMethodPoints.length > 0)
+			{
+				postConstructMethodPoints.sortOn("order", Array.NUMERIC);
+				injectionPoints.push.apply(injectionPoints, postConstructMethodPoints);
+			}
+
+
 			//get injection points for variables
-			for each (node in description.factory.*.
+			/*for each (node in description.factory.*.
 				(name() == 'variable' || name() == 'accessor').metadata.(@name == 'Inject'))
 			{
 				injectionPoint = new PropertyInjectionPoint(node);
 				injectionPoints.push(injectionPoint);
-			}
+			}*/
 		
 			//get injection points for methods
-			for each (node in description.factory.method.metadata.(@name == 'Inject'))
+			/*for each (node in description.factory.method.metadata.(@name == 'Inject'))
 			{
 				injectionPoint = new MethodInjectionPoint(node, this);
 				injectionPoints.push(injectionPoint);
-			}
+			}*/
 			
 			//get post construct methods
-			var postConstructMethodPoints : Array = [];
+			/*var postConstructMethodPoints : Array = [];
 			for each (node in description.factory.method.metadata.(@name == 'PostConstruct'))
 			{
 				injectionPoint = new PostConstructInjectionPoint(node, this);
@@ -316,11 +410,16 @@ COMPILE::SWF {
 			{
 				postConstructMethodPoints.sortOn("order", Array.NUMERIC);
 				injectionPoints.push.apply(injectionPoints, postConstructMethodPoints);
-			}
+			}*/
 
 			var injecteeDescription : InjecteeDescription =
 					new InjecteeDescription(ctorInjectionPoint, injectionPoints);
-			m_injecteeDescriptions[clazz] = injecteeDescription;
+
+			COMPILE::SWF
+			 m_injecteeDescriptions[clazz]  = injecteeDescription;
+			COMPILE::JS
+			m_injecteeDescriptions.set(clazz,injecteeDescription );
+
 			return injecteeDescription;
 		}
 
@@ -337,18 +436,23 @@ COMPILE::SWF {
 			return config;
 		}
 		
-		private function createInjectionPointsFromConfigXML(description : XML) : void
+		private function createInjectionPointsFromConfigXML(description : TypeDefinition) : void
 		{
 			var node : XML;
+
+			//@ttodo
+			throwError('@todo createInjectionPointsFromConfigXML ')
 			//first, clear out all "Inject" metadata, we want a clean slate to have the result 
 			//work the same in the Flash IDE and MXMLC
-			for each (node in description..metadata.(@name=='Inject' || @name=='PostConstruct'))
+			/*for each (node in description..metadata.(@name=='Inject' || @name=='PostConstruct'))
 			{
 				delete node.parent().metadata.(@name=='Inject' || @name=='PostConstruct')[0];
 			}
+
+
 			
 			//now, we create the new injection points based on the given xml file
-			var className:String = description.factory.@type;
+			var className:String = description.qualifiedName;
 			for each (node in m_xmlMetadata.type.(@name == className).children())
 			{
 				var metaNode : XML = <metadata/>;
@@ -387,19 +491,30 @@ COMPILE::SWF {
 					}
 				}
 				typeNode.appendChild(metaNode);
-			}
+			}*/
 		}
 		
-		private function addParentInjectionPoints(description : XML, injectionPoints : Array) : void
+		private function addParentInjectionPoints(description : TypeDefinition, injectionPoints : Array) : void
 		{
-			var parentClassName : String = description.factory.extendsClass.@type[0];
+			var ancestors:Array = description.baseClasses;
+			if (!ancestors || !ancestors.length) return;
+			var parentDefinition:TypeDefinition = TypeDefinition(ancestors[0]);
+			if (!parentDefinition) return;
+
+			/*var parentClassName : String = parentDefinition.qualifiedName;
 			if (!parentClassName)
 			{
 				return;
 			}
-			var parentClass : Class = Class(getDefinitionByName(parentClassName));
-			var parentDescription : InjecteeDescription =
-					m_injecteeDescriptions[parentClass] || getInjectionPoints(parentClass);
+			var parentClass : Class = Class(getDefinitionByName(parentClassName));*/
+
+			var parentClass : Class = parentDefinition.getClass();
+			var parentDescription : InjecteeDescription;
+			COMPILE::SWF
+			parentDescription = m_injecteeDescriptions[parentClass] || getInjectionPoints(parentClass);
+			COMPILE::JS
+			parentDescription = m_injecteeDescriptions.get(parentClass) || getInjectionPoints(parentClass);
+
 			var parentInjectionPoints : Array = parentDescription.injectionPoints;
 
 			injectionPoints.push.apply(injectionPoints, parentInjectionPoints);

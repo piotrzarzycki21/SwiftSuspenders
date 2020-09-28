@@ -7,7 +7,11 @@
 
 package org.swiftsuspenders.injectionpoints
 {
-	import org.swiftsuspenders.Injector;
+import org.apache.royale.reflection.DefinitionWithMetaData;
+import org.apache.royale.reflection.MetaDataArgDefinition;
+import org.apache.royale.reflection.MetaDataDefinition;
+import org.apache.royale.reflection.MethodDefinition;
+import org.swiftsuspenders.Injector;
 	
 	public class PostConstructInjectionPoint extends InjectionPoint
 	{
@@ -17,13 +21,13 @@ package org.swiftsuspenders.injectionpoints
 		protected var methodName : String;
 		protected var orderValue:int;
 		
-		
+		protected var _methodDef:MethodDefinition;
 		/*******************************************************************************************
 		 *								public methods											   *
 		 *******************************************************************************************/
-		public function PostConstructInjectionPoint(node:XML, injector : Injector = null)
+		public function PostConstructInjectionPoint(def:DefinitionWithMetaData, injector : Injector = null)
 		{
-			super(node, injector);
+			super(def, injector);
 		}
 		
 		public function get order():int
@@ -33,6 +37,7 @@ package org.swiftsuspenders.injectionpoints
 
 		override public function applyInjection(target : Object, injector : Injector) : Object
 		{
+
 			target[methodName]();
 			return target;
 		}
@@ -41,12 +46,18 @@ package org.swiftsuspenders.injectionpoints
 		/*******************************************************************************************
 		 *								protected methods										   *
 		 *******************************************************************************************/
-		override protected function initializeInjection(node : XML) : void
+		override protected function initializeInjection(def:DefinitionWithMetaData) : void
 		{
-			var orderArg : XMLList = node.arg.(@key == 'order');
+			_methodDef = def as MethodDefinition;
+			var postConstructs:Array = def.retrieveMetaDataByName('PostConstruct');
+			var postConstructData:MetaDataDefinition = postConstructs[0] as MetaDataDefinition;
+
+			var orderArg:Array = postConstructData.getArgsByKey('order');
+			orderValue = orderArg.length ? int((orderArg[0] as MetaDataArgDefinition).value) : 0;
+			/*var orderArg : XMLList = node.arg.(@key == 'order');
 			var methodNode : XML = node.parent();
-			orderValue = int(orderArg.@value);
-			methodName = methodNode.@name.toString();
+			orderValue = int(orderArg.@value);*/
+			methodName = _methodDef.name;
 		}
 	}
 }

@@ -5,6 +5,8 @@ package
         import org.swiftsuspenders.Reflector; Reflector;
         import org.swiftsuspenders.InjectorError; InjectorError;
         import org.swiftsuspenders.Injector; Injector;
+        import org.swiftsuspenders.InjectionConfig; InjectionConfig;
+        import org.swiftsuspenders.getConstructor; getConstructor;
         import org.swiftsuspenders.InjectionType; InjectionType;
         import org.swiftsuspenders.injectionresults.InjectValueResult; InjectValueResult;
         import org.swiftsuspenders.injectionresults.InjectSingletonResult; InjectSingletonResult;
@@ -17,7 +19,6 @@ package
         import org.swiftsuspenders.injectionpoints.MethodInjectionPoint; MethodInjectionPoint;
         import org.swiftsuspenders.injectionpoints.InjectionPoint; InjectionPoint;
         import org.swiftsuspenders.injectionpoints.ConstructorInjectionPoint; ConstructorInjectionPoint;
-        import org.swiftsuspenders.InjectionConfig; InjectionConfig;
-        import org.swiftsuspenders.getConstructor; getConstructor;
+
     }
 }

@@ -7,7 +7,7 @@
 
 package org.swiftsuspenders
 {
-	import flash.utils.getQualifiedClassName;
+	import org.apache.royale.reflection.getQualifiedClassName;
 
 	import org.swiftsuspenders.injectionresults.InjectionResult;
 

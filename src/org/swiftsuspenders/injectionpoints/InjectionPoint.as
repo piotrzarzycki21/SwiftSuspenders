@@ -8,15 +8,16 @@
 package org.swiftsuspenders.injectionpoints
 {
 	import org.swiftsuspenders.Injector;
+	import org.apache.royale.reflection.DefinitionWithMetaData;
 
 	public class InjectionPoint
 	{
 		/*******************************************************************************************
 		*								public methods											   *
 		*******************************************************************************************/
-		public function InjectionPoint(node : XML, injector : Injector)
+		public function InjectionPoint(def : DefinitionWithMetaData, injector : Injector)
 		{
-			initializeInjection(node);
+			initializeInjection(def);
 		}
 		
 		public function applyInjection(target : Object, injector : Injector) : Object
@@ -28,7 +29,7 @@ package org.swiftsuspenders.injectionpoints
 		/*******************************************************************************************
 		*								protected methods										   *
 		*******************************************************************************************/
-		protected function initializeInjection(node : XML) : void
+		protected function initializeInjection(def : DefinitionWithMetaData) : void
 		{
 		}
 	}

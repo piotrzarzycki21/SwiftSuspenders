@@ -7,7 +7,8 @@
 
 package org.swiftsuspenders.injectionpoints
 {
-	import org.apache.royale.reflection.describeType;
+import org.apache.royale.reflection.DefinitionWithMetaData;
+import org.apache.royale.reflection.describeType;
 	import org.apache.royale.reflection.getQualifiedClassName;
 
 	import org.swiftsuspenders.Injector;
@@ -18,18 +19,18 @@ package org.swiftsuspenders.injectionpoints
 		*								public methods											   *
 		*******************************************************************************************/
 		public function ConstructorInjectionPoint(
-				node : XML, clazz : Class, injector : Injector = null)
+				def : DefinitionWithMetaData, clazz : Class, injector : Injector = null)
 		{
 			/*
 			  In many cases, the flash player doesn't give us type information for constructors until 
 			  the class has been instantiated at least once. Therefore, we do just that if we don't get 
 			  type information for at least one parameter.
 			 */ 
-			if (node.parameter.(@type == '*').length() == node.parameter.@type.length())
+			/*if (node.parameter.(@type == '*').length() == node.parameter.@type.length())
 			{
 				createDummyInstance(node, clazz);
-			}
-			super(node, injector);
+			}*/
+			super(def, injector);
 		}
 		
 		override public function applyInjection(target : Object, injector : Injector) : Object
@@ -62,19 +63,27 @@ package org.swiftsuspenders.injectionpoints
 		/*******************************************************************************************
 		*								protected methods										   *
 		*******************************************************************************************/
-		override protected function initializeInjection(node : XML) : void
+		override protected function initializeInjection(def : DefinitionWithMetaData) : void
 		{
+
+			/*
 			var nameArgs : XMLList = node.parent().metadata.(@name == 'Inject').arg.(@key == 'name');
 			methodName = 'constructor';
 			
-			gatherParameters(node, nameArgs);
+			gatherParameters(node, nameArgs);*/
+
+			super.initializeInjection(def);
+			methodName = 'constructor';
 		}
 		
 		/*******************************************************************************************
 		*								private methods											   *
 		*******************************************************************************************/
-		private function createDummyInstance(constructorNode : XML, clazz : Class) : void
+
+		//@todo this might need to be re-instanted as swf-only
+		/*private function createDummyInstance(constructorNode : XML, clazz : Class) : void
 		{
+
 			try
 			{
 				switch (constructorNode.children().length())
@@ -101,6 +110,6 @@ package org.swiftsuspenders.injectionpoints
 						'The caught exception was:\n' + error);
 			}
 			constructorNode.setChildren(describeType(clazz).factory.constructor[0].children());
-		}
+		}*/
 	}
 }
