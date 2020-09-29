@@ -7,13 +7,13 @@
 
 package org.swiftsuspenders.injectionpoints
 {
-import org.apache.royale.debugging.throwError;
-import org.apache.royale.reflection.DefinitionWithMetaData;
-import org.apache.royale.reflection.MetaDataArgDefinition;
-import org.apache.royale.reflection.MetaDataDefinition;
-import org.apache.royale.reflection.MethodDefinition;
-import org.apache.royale.reflection.ParameterDefinition;
-import org.apache.royale.reflection.getQualifiedClassName;
+
+	import org.apache.royale.reflection.DefinitionWithMetaData;
+	import org.apache.royale.reflection.MetaDataArgDefinition;
+	import org.apache.royale.reflection.MetaDataDefinition;
+	import org.apache.royale.reflection.MethodDefinition;
+	import org.apache.royale.reflection.ParameterDefinition;
+	import org.apache.royale.reflection.getQualifiedClassName;
 	import org.apache.royale.reflection.getDefinitionByName;
 
 
@@ -61,7 +61,7 @@ import org.apache.royale.reflection.getQualifiedClassName;
 			var methodDef:MethodDefinition = def as MethodDefinition;
 			_methodDef = methodDef;
 			//@todo remove this, debugging of ported code:
-			if (!methodDef) throwError('initializeInjection is not processing an actual MethodDefinition');
+			if (!methodDef) throw new Error('initializeInjection is not processing an actual MethodDefinition');
 
 			var injects:Array = def.retrieveMetaDataByName('Inject');
 			var injectData:MetaDataDefinition = injects[0] as MetaDataDefinition;

@@ -8,18 +8,16 @@
 package org.swiftsuspenders
 {
 
-import org.apache.royale.debugging.throwError;
-import org.apache.royale.reflection.MethodDefinition;
+	import org.apache.royale.reflection.MethodDefinition;
+	import org.apache.royale.reflection.TypeDefinition;
+	import org.apache.royale.reflection.VariableDefinition;
+	import org.apache.royale.reflection.utils.MemberTypes;
+	import org.apache.royale.reflection.utils.getMembersWithMetadata;
 
-import org.apache.royale.reflection.TypeDefinition;
-import org.apache.royale.reflection.VariableDefinition;
-import org.apache.royale.reflection.utils.MemberTypes;
-import org.apache.royale.reflection.utils.getMembersWithMetadata;
-
-COMPILE::SWF {
-	import flash.utils.Dictionary;
-	import flash.utils.Proxy;
-}
+	COMPILE::SWF {
+		import flash.utils.Dictionary;
+		import flash.utils.Proxy;
+	}
 	import org.apache.royale.reflection.describeType;
 	//import flash.system.ApplicationDomain;
 
@@ -162,11 +160,13 @@ COMPILE::SWF {
 			var targetClass : Class = getConstructor(target);
 			var injecteeDescription : InjecteeDescription
 
-			COMPILE::SWF
-			injecteeDescription = m_injecteeDescriptions[targetClass] || getInjectionPoints(targetClass);
+			COMPILE::SWF{
+				injecteeDescription = m_injecteeDescriptions[targetClass] || getInjectionPoints(targetClass);
+			}
 
-			COMPILE::JS
-			injecteeDescription = m_injecteeDescriptions.get(targetClass) || getInjectionPoints(targetClass);
+			COMPILE::JS{
+				injecteeDescription = m_injecteeDescriptions.get(targetClass) || getInjectionPoints(targetClass);
+			}
 
 			var injectionPoints : Array = injecteeDescription.injectionPoints;
 			var length : int = injectionPoints.length;
@@ -181,10 +181,13 @@ COMPILE::SWF {
 		public function instantiate(clazz:Class):*
 		{
 			var injecteeDescription : InjecteeDescription;
-			COMPILE::SWF
-			injecteeDescription = m_injecteeDescriptions[clazz];
-			COMPILE::JS
-			injecteeDescription = m_injecteeDescriptions.get(clazz);
+			COMPILE::SWF{
+				injecteeDescription = m_injecteeDescriptions[clazz];
+			}
+
+			COMPILE::JS{
+				injecteeDescription = m_injecteeDescriptions.get(clazz);
+			}
 
 			if (!injecteeDescription)
 			{
@@ -337,8 +340,9 @@ COMPILE::SWF {
 			// This is where we have to wire in the XML...
 			if(m_xmlMetadata)
 			{
-				createInjectionPointsFromConfigXML(description);
-				addParentInjectionPoints(description, injectionPoints);
+				throw new Error('support for XML config needs to be added')
+			/*	createInjectionPointsFromConfigXML(description);
+				addParentInjectionPoints(description, injectionPoints);*/
 			}
 
 			//get constructor injections
@@ -415,10 +419,14 @@ COMPILE::SWF {
 			var injecteeDescription : InjecteeDescription =
 					new InjecteeDescription(ctorInjectionPoint, injectionPoints);
 
-			COMPILE::SWF
-			 m_injecteeDescriptions[clazz]  = injecteeDescription;
-			COMPILE::JS
-			m_injecteeDescriptions.set(clazz,injecteeDescription );
+			COMPILE::SWF{
+				m_injecteeDescriptions[clazz]  = injecteeDescription;
+			}
+
+			COMPILE::JS{
+				m_injecteeDescriptions.set(clazz,injecteeDescription );
+			}
+
 
 			return injecteeDescription;
 		}
@@ -441,7 +449,7 @@ COMPILE::SWF {
 			var node : XML;
 
 			//@ttodo
-			throwError('@todo createInjectionPointsFromConfigXML ')
+			throw new Error('@todo createInjectionPointsFromConfigXML ')
 			//first, clear out all "Inject" metadata, we want a clean slate to have the result 
 			//work the same in the Flash IDE and MXMLC
 			/*for each (node in description..metadata.(@name=='Inject' || @name=='PostConstruct'))
@@ -510,10 +518,13 @@ COMPILE::SWF {
 
 			var parentClass : Class = parentDefinition.getClass();
 			var parentDescription : InjecteeDescription;
-			COMPILE::SWF
-			parentDescription = m_injecteeDescriptions[parentClass] || getInjectionPoints(parentClass);
-			COMPILE::JS
-			parentDescription = m_injecteeDescriptions.get(parentClass) || getInjectionPoints(parentClass);
+			COMPILE::SWF{
+				parentDescription = m_injecteeDescriptions[parentClass] || getInjectionPoints(parentClass);
+			}
+
+			COMPILE::JS{
+				parentDescription = m_injecteeDescriptions.get(parentClass) || getInjectionPoints(parentClass);
+			}
 
 			var parentInjectionPoints : Array = parentDescription.injectionPoints;
 
