@@ -300,7 +300,7 @@
 			<version>${royale.version}</version>
 			<type>swc</type>
 			<classifier>js</classifier>
-			<scope>compile</scope>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
