@@ -42,8 +42,21 @@ package org.swiftsuspenders
 		*******************************************************************************************/
 		COMPILE::SWF
 		private static var INJECTION_POINTS_CACHE : Dictionary = new Dictionary(true);
+
+		//work around compiler bug:
 		COMPILE::JS
-		private static var INJECTION_POINTS_CACHE : WeakMap = new WeakMap();
+		private static var _ipc:WeakMap;
+		COMPILE::JS
+		protected static function get INJECTION_POINTS_CACHE():WeakMap {
+			return _ipc || (_ipc = new WeakMap());
+		}
+		COMPILE::JS
+		protected static function set INJECTION_POINTS_CACHE(value:WeakMap):void {
+			_ipc = value;
+		}
+		//the following (original) causes an error in the generated code for release build ( compiler fix needed, @todo restore when done)
+	/*	COMPILE::JS
+		private static var INJECTION_POINTS_CACHE : WeakMap = new WeakMap();*/
 
 
 		private var m_parentInjector : Injector;
