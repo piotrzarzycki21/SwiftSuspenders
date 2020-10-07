@@ -67,9 +67,13 @@ import org.apache.royale.reflection.getDefinitionByName;
 			var injects:Array = def.retrieveMetaDataByName('Inject');
 			var injectData:MetaDataDefinition = injects[0] as MetaDataDefinition;
 			var args:Array = injectData.getArgsByKey('value');
-			var arg:MetaDataArgDefinition = args[0] as MetaDataArgDefinition;
+			if (args.length) {
+				var arg:MetaDataArgDefinition = args[0] as MetaDataArgDefinition;
+				_injectionName = arg.value
+			} else {
+				_injectionName = '';
+			}
 
-			_injectionName = arg.value
 
 /*			_propertyType = node.parent().@type.toString();
 			_propertyName = node.parent().@name.toString();
