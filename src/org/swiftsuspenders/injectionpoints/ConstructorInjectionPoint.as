@@ -42,21 +42,20 @@ import org.apache.royale.reflection.describeType;
 			//the only way to implement ctor injections, really!
 			switch (p.length)
 			{
-				case 0 : result = new ctor();
-				case 1 : result = new ctor(p[0]);
-				case 2 : result = new ctor(p[0], p[1]);
-				case 3 : result = new ctor(p[0], p[1], p[2]);
-				case 4 : result = new ctor(p[0], p[1], p[2], p[3]);
-				case 5 : result = new ctor(p[0], p[1], p[2], p[3], p[4]);
-				case 6 : result = new ctor(p[0], p[1], p[2], p[3], p[4], p[5]);
-				case 7 : result = new ctor(p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
-				case 8 : result = new ctor(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]);
-				case 9 : result = new ctor(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8]);
-				case 10 : result = new ctor(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9]);
+				case 0 : result = new ctor();break;
+				case 1 : result = new ctor(p[0]);break;
+				case 2 : result = new ctor(p[0], p[1]);break;
+				case 3 : result = new ctor(p[0], p[1], p[2]);break;
+				case 4 : result = new ctor(p[0], p[1], p[2], p[3]);break;
+				case 5 : result = new ctor(p[0], p[1], p[2], p[3], p[4]);break;
+				case 6 : result = new ctor(p[0], p[1], p[2], p[3], p[4], p[5]);break;
+				case 7 : result = new ctor(p[0], p[1], p[2], p[3], p[4], p[5], p[6]);break;
+				case 8 : result = new ctor(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]);break;
+				case 9 : result = new ctor(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8]);break;
+				case 10 : result = new ctor(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9]);break;
 				default: throw new Error("The constructor for " + getQualifiedClassName(ctor) + " has too many arguments, maximum is 10");
 			}
 
-			p.length = 0;
 			return result;
 		}
 
