@@ -66,7 +66,7 @@ import org.apache.royale.reflection.getDefinitionByName;
 			_propertyType = _varDef.type.qualifiedName;
 			var injects:Array = def.retrieveMetaDataByName('Inject');
 			var injectData:MetaDataDefinition = injects[0] as MetaDataDefinition;
-			var args:Array = injectData.getArgsByKey('value');
+			var args:Array = injectData.args;//getArgsByKey('value'); //Original does not care about the name of the arg, only the value
 			if (args.length) {
 				var arg:MetaDataArgDefinition = args[0] as MetaDataArgDefinition;
 				_injectionName = arg.value
