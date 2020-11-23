@@ -64,9 +64,14 @@ package org.swiftsuspenders.injectionpoints
 			if (!methodDef) throw new Error('initializeInjection is not processing an actual MethodDefinition');
 
 			var injects:Array = def.retrieveMetaDataByName('Inject');
-			var injectData:MetaDataDefinition = injects[0] as MetaDataDefinition;
+			var nameArgs:Array
+			if (injects.length) {
+				var injectData:MetaDataDefinition = injects[0] as MetaDataDefinition;
 
-			var nameArgs:Array = injectData.getArgsByKey('name');
+				nameArgs = injectData.getArgsByKey('name');
+			} else {
+				nameArgs = [];
+			}
 
 
 		//	var nameArgs : XMLList = node.arg.(@key == 'name');
